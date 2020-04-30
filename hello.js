@@ -12,9 +12,13 @@ function log() {
 function init() {
     log(`page loaded after ${Date.now() - start}ms`);
 
+    // TODO: haven't figured out now to create imports with standalone
+    // `.wasm` libraries which is required in order to create memory in
+    // javascript which is then shared with the loaded .wasm module.s
+
     // const memory = new WebAssembly.Memory({
-    //     initial: 256,
-    //     maximum: 256
+    //     initial: 4096,
+    //     maximum: 8192
     // });
     // const heap = new Uint8Array(memory.buffer);
     // const glob = new WebAssembly.Global({value:'i32', mutable:true}, 0);
@@ -24,21 +28,11 @@ function init() {
     };
 
     fetch('hello.wasm')
+        // fetch raw .wasm bytes and convert to arraybuffer
         .then(response => response.arrayBuffer())
-        // if we want to cache and instantiate a lot of modules
-        // .then(bytes => {
-        //     // but only want to compile it once
-        //     WebAssembly.compile(bytes).then(mod => {
-        //         console.log('imports', WebAssembly.Module.imports(mod));
-        //         console.log('exports', WebAssembly.Module.exports(mod));
-        //         WebAssembly.instantiate(mod, importObject).then(instance => {
-        //             console.log({instance});
-        //         });
-        //     });
-        //     return bytes;
-        // })
-        // compile and instantiate a module from raw wasm bytes
+        // compile and instantiate a module from arraybuffer
         .then(bytes => WebAssembly.instantiate(bytes, importObject))
+        // bind memory and function pointers from exports and test
         .then(results => {
             let {module, instance} = results;
             let {exports} = instance;
