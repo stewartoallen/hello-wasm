@@ -12,8 +12,10 @@
   and require dependency wrappers (aka diapers)
 * `-O3` strips anything not explicitly marked with `EMSCRIPTEN_KEEPALIVE`
 * and also does not mangle your exported function name
+* overrides default memory to 8MB which is matched in the `.js`
+* without `-Wl,--import-memory` the `.wasm` file exports memory to JS
 
-`emcc hello.c -o hello.wasm -O3`
+`emcc hello.c -o hello.wasm -O3 -Wl,--import-memory -s INITIAL_MEMORY=8MB`
 
 ## optionally look at .wat
 

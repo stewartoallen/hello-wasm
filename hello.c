@@ -1,5 +1,5 @@
 /**
- * compile with: emcc hello.c -o hello.wasm -O3
+ * compile with: emcc hello.c -o hello.wasm -O3 -Wl,--import-memory -s INITIAL_MEMORY=8MB
  * convert to readable .wat with: wasm2wat hello.wasm
  */
 

@@ -12,20 +12,20 @@ function log() {
 function init() {
     log(`page loaded after ${Date.now() - start}ms`);
 
-    // TODO: haven't figured out now to create imports with standalone
-    // `.wasm` libraries which is required in order to create memory in
-    // javascript which is then shared with the loaded .wasm module.s
-
-    // const memory = new WebAssembly.Memory({
-    //     initial: 4096,
-    //     maximum: 8192
-    // });
-    // const heap = new Uint8Array(memory.buffer);
-    // const glob = new WebAssembly.Global({value:'i32', mutable:true}, 0);
+    const kb = 1024;
+    const mb = kb * kb;
+    const page_size = 65536;
+    const memory = new WebAssembly.Memory({
+        initial: (8 * mb) / page_size,
+        maximum: (8 * mb) / page_size
+    });
+    const heap = new Uint8Array(memory.buffer);
     let importObject = {
-        // env: { memory: memory },
-        // js: { global: glob }
+        env: { memory: memory }
     };
+
+    console.log({jsheap: heap});
+    for (let i=0; i<100; i++) heap[i] = 100 - i;
 
     fetch('hello.wasm')
         // fetch raw .wasm bytes and convert to arraybuffer
@@ -36,7 +36,9 @@ function init() {
         .then(results => {
             let {module, instance} = results;
             let {exports} = instance;
-            let heap = new Uint8Array(exports.memory.buffer);
+            // if `-Wl,--import-memory` is omitted from .wasm compile
+            // then we can access the memory as an export from the module
+            // let heap = new Uint8Array(exports.memory.buffer);
 
             console.log({module, instance, exports, heap});
 
