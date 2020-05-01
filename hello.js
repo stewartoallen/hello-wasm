@@ -15,7 +15,7 @@ if (self.window) {
         return document.getElementById(id);
     }
 
-    function log() {
+    window.log = function log() {
         let msg = [...arguments].map(v => v.toString()).join(' ') + '\n';
         $('log').innerText += msg;
     }
