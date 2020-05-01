@@ -1,16 +1,43 @@
 let start = Date.now();
+let context;
 
-function $(id) {
-    return document.getElementById(id);
+// check to see if we're in a worker or browser top then provide
+// the log() function needed for init() to report test results
+if (self.window) {
+
+    context = 'page';
+
+    // if we're in the browser top, spawn a worker to show the same
+    // WebAssembly code works in a worker context, too
+    new Worker("hello.js");
+
+    function $(id) {
+        return document.getElementById(id);
+    }
+
+    function log() {
+        let msg = [...arguments].map(v => v.toString()).join(' ') + '\n';
+        $('log').innerText += msg;
+    }
+
+} else {
+
+    context = 'worker';
+
+    // this is inside the worker context because window isn't present
+    // open javascript console to see this output
+    function log() {
+        console.log(...arguments);
+    }
+
+    init();
+
 }
 
-function log() {
-    let msg = [...arguments].map(v => v.toString()).join(' ') + '\n';
-    $('log').innerText += msg;
-}
-
+// runs after the DOM loads in the browser top context or
+// immediately inside the worker when it loads
 function init() {
-    log(`page loaded after ${Date.now() - start}ms`);
+    log(`${context} loaded after ${Date.now() - start}ms`);
 
     const kb = 1024;
     const mb = kb * kb;
@@ -24,7 +51,8 @@ function init() {
         env: { memory: memory }
     };
 
-    console.log({jsheap: heap});
+    // seed first 100 bytes of heap which we will see part of
+    // in the reverse() test below
     for (let i=0; i<100; i++) heap[i] = 100 - i;
 
     fetch('hello.wasm')
@@ -39,8 +67,6 @@ function init() {
             // if `-Wl,--import-memory` is omitted from .wasm compile
             // then we can access the memory as an export from the module
             // let heap = new Uint8Array(exports.memory.buffer);
-
-            console.log({module, instance, exports, heap});
 
             let values = [2,4,6,8,1,3,5,7];
 
