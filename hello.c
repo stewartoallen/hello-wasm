@@ -4,6 +4,7 @@
  */
 
 #include <emscripten.h>
+#include <string.h>
 
 /* required annotation to keep compiler from optimizing
  * this function away. also prevents compiler from mangling
@@ -36,4 +37,18 @@ int reverse(unsigned char* p, int len) {
         p[len - i - 1] = temp;
     }
     return len;
+}
+
+struct simple {
+    int abc;
+    float def;
+    char *name;
+};
+
+EMSCRIPTEN_KEEPALIVE
+int structest(unsigned char *p) {
+    struct simple rec = { 0x01020304, 123.456, "string" };
+    memcpy(p, &rec, sizeof(rec));
+    memcpy(p + sizeof(rec), rec.name, strlen(rec.name));
+    return sizeof(rec) + strlen(rec.name);
 }

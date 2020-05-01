@@ -81,5 +81,10 @@ function init() {
             exports.reverse(0,10);
             for (let i=0; i<10; i++) log(i, heap[i]);
 
+            // write struct to heap memory
+            log('write struct to heap');
+            let len = exports.structest(0);
+            for (let i=0; i<len; i++)
+                log(i, heap[i], heap[i].toString(16), String.fromCharCode(heap[i]));
         });
 }
